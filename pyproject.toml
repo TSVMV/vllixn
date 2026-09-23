@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vllixn"
+version = "0.2.0"
+description = "Read-only Linux host security checkup: audit accounts, SSH, permissions, network and kernel"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+keywords = ["security", "linux", "hardening", "audit", "blue-team", "cis"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Security",
+]
+dependencies = []
+
+[project.scripts]
+vllixn = "vllixn.cli:main"
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["vllixn*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+ignore = ["B905", "FLY002"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
