@@ -1,0 +1,48 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  id-token: write
+
+jobs:
+  build-and-publish:
+    name: Build and publish to PyPI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run tests
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          pytest -q
+
+      - name: Check if version already published
+        id: check
+        run: |
+          VER=$(python -c "import tomllib,pathlib; print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          if curl -sf "https://pypi.org/pypi/vllixn/$VER/json" >/dev/null 2>&1; then
+            echo "skip_publish=true" >> "$GITHUB_OUTPUT"
+            echo "Version $VER already on PyPI, skipping publish."
+          else
+            echo "skip_publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build package
+        if: steps.check.outputs.skip_publish != 'true'
+        run: |
+          pip install build
+          python -m build
+
+      - name: Publish to PyPI
+        if: steps.check.outputs.skip_publish != 'true'
+        uses: pypa/gh-action-pypi-publish@release/v1
